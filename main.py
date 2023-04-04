@@ -3,17 +3,16 @@ from utils import generate_datasets_bcw, generate_datasets_pid, format_y_preds
 from sklearn.metrics import recall_score, precision_score, matthews_corrcoef, f1_score
 
 # Dataset BCW/PID
-USE_BCW = True
+USE_BCW = False
 
 # Global parameters
 EPOCHS = 20
-EXECUTIONS = 50
+EXECUTIONS = 5
 TRAIN_BATCH_SIZE = 8 if USE_BCW else 64
 TEST_BATCH_SIZE = 1
 X_TRAIN, X_TEST, Y_TRAIN, Y_TEST = generate_datasets_bcw() if USE_BCW else generate_datasets_pid()
 DATASET_FEATURES = X_TRAIN.shape[1]
 TRAIN_STEPS = len(X_TRAIN) // TRAIN_BATCH_SIZE
-TEST_STEPS = len(X_TEST) // TEST_BATCH_SIZE
 
 # Results
 res_recall = []
@@ -96,14 +95,14 @@ for execution in range(EXECUTIONS):
 
     # Train model
     train_model = create_model_bcw(is_train=True) if USE_BCW else create_model_pid(is_train=True)
-    train_model.fit(x=train_data_generator(), epochs=EPOCHS, steps_per_epoch=TRAIN_STEPS, verbose=0)
+    train_model.fit(x=train_data_generator(), epochs=EPOCHS, steps_per_epoch=TRAIN_STEPS, verbose=1)
 
     # Test model
     test_model = create_model_bcw(is_train=False) if USE_BCW else create_model_pid(is_train=False)
     test_model.set_weights(train_model.weights)
 
     # Evaluation
-    y_preds = test_model.predict(x=test_data_generator(), batch_size=TEST_BATCH_SIZE, steps=TEST_STEPS)
+    y_preds = test_model.predict(x=test_data_generator(), batch_size=TEST_BATCH_SIZE)
     formatted_y_preds = format_y_preds(y_preds)
 
     # Results collection
